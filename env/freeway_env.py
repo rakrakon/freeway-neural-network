@@ -1,0 +1,160 @@
+import random
+
+import numpy as np
+import pygame
+
+from utils import load_config
+
+ROAD_COLOR = [118, 122, 122]
+CHICKEN_COLOR = [110, 84, 35]
+CAR_COLOR = [0, 0, 255]
+WHITE_COLOR = [255, 255, 255]
+YELLOW_COLOR = [255, 255, 0]
+SIDEWALK_COLOR = [180, 180, 180]
+SIDEWALK_HEIGHT = 20  # pixels
+
+DIVIDER_THICKNESS = 2
+SEPARATION = 4
+DASH_LENGTH = 10
+GAP_LENGTH = 10
+
+class FreewayENV:
+    def __init__(self):
+        self.config = load_config()
+
+        self.cars = []
+        self.steps = 0
+        self.score = 0
+        self.done = False
+        self.clock = None
+
+        # Config
+        self.screen_width = self.config['env']['width']
+        self.screen_height = self.config['env']['height']
+        self.num_lanes = self.config['env']['num_lanes']
+        self.lane_height = self.screen_height // self.num_lanes
+        self.fps = self.config['env']['fps']
+
+        self.chicken_center_x = None
+        self.chicken_center_y = None
+
+        self.chicken_width = 7
+        self.chicken_height = 7
+
+        self.car_width = 6
+        self.car_height = 6
+
+        self.action_map = {
+            pygame.K_w: 1, pygame.K_UP: 1,
+            pygame.K_a: 2, pygame.K_LEFT: 2,
+            pygame.K_d: 3, pygame.K_RIGHT: 3,
+            pygame.K_s: 4, pygame.K_DOWN: 4
+        }
+
+        self.reset()
+
+    def reset(self):
+        self.cars = []
+        lane_height = (self.screen_height - 2 * SIDEWALK_HEIGHT) // self.num_lanes
+        for i in range(self.num_lanes):
+            lane_center = SIDEWALK_HEIGHT + i * lane_height + lane_height // 2
+            car_x = random.uniform(0, self.screen_width)
+            self.cars.append({
+                'center_x': car_x,
+                'center_y': lane_center,
+                'speed': random.uniform(1.5, 3.0)
+            })
+
+        self.chicken_center_x = self.screen_width // 2
+        self.chicken_center_y = self.screen_height - 20
+
+        return self.get_obs(), {'score': self.score}
+
+    def get_obs(self):
+        obs = np.zeros((self.screen_height, self.screen_width, 3), dtype=np.uint8)
+
+        self.draw_lanes(obs)
+
+        cx, cy = int(self.chicken_center_x), int(self.chicken_center_y)
+        obs[cy - self.chicken_height // 2: cy + self.chicken_height // 2 + 1,
+        cx - self.chicken_width // 2: cx + self.chicken_width // 2 + 1] = CHICKEN_COLOR
+
+        for car in self.cars:
+            cx, cy = int(car['center_x']), int(car['center_y'])
+            obs[cy - self.car_height // 2: cy + self.car_height // 2 + 1,
+            cx - self.car_width // 2: cx + self.car_width // 2 + 1] = CAR_COLOR
+
+        return obs
+
+    def draw_lanes(self, obs):
+        # Sidewalks
+        obs[0:SIDEWALK_HEIGHT, :] = SIDEWALK_COLOR
+        obs[self.screen_height - SIDEWALK_HEIGHT:self.screen_height, :] = SIDEWALK_COLOR
+
+        # Lanes
+        lane_start_y = SIDEWALK_HEIGHT
+        lane_end_y = self.screen_height - SIDEWALK_HEIGHT
+        lane_height = (lane_end_y - lane_start_y) // self.num_lanes
+
+        for i in range(self.num_lanes):
+            y_start = lane_start_y + i * lane_height
+            y_end = y_start + lane_height
+            obs[y_start:y_end, :] = ROAD_COLOR
+
+        # Lane dividers
+        for i in range(1, self.num_lanes):
+            y = lane_start_y + i * lane_height
+            y_start = max(0, y - DIVIDER_THICKNESS // 2)
+            y_end = min(self.screen_height, y_start + DIVIDER_THICKNESS)
+            for x in range(0, self.screen_width, DASH_LENGTH + GAP_LENGTH):
+                x_end = min(x + DASH_LENGTH, self.screen_width)
+                obs[y_start:y_end, x:x_end] = WHITE_COLOR
+
+        # Double yellow middle line
+        middle_y = lane_start_y + (lane_end_y - lane_start_y) // 2
+        for x in range(0, self.screen_width, DASH_LENGTH + GAP_LENGTH):
+            x_end = min(x + DASH_LENGTH, self.screen_width)
+            obs[middle_y - 1:middle_y + 1, x:x_end] = YELLOW_COLOR
+            obs[middle_y + SEPARATION:middle_y + SEPARATION + 2, x:x_end] = YELLOW_COLOR
+
+    def step(self, action=None):
+        self.steps += 1
+
+        if pygame.get_init():
+            keys = pygame.key.get_pressed()
+            for key, act in self.action_map.items():
+                if keys[key]:
+                    action = act
+                    break
+            else:
+                action = 0
+
+        if action is None:
+            action = 0
+
+        if action == 1:
+            self.chicken_center_y = max(0, self.chicken_center_y - 3)
+        elif action == 2:
+            self.chicken_center_x = max(5, self.chicken_center_x - 6)
+        elif action == 3:
+            self.chicken_center_x = min(self.screen_width - 5, self.chicken_center_x + 6)
+        elif action == 4:
+            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 3)
+
+        for car in self.cars:
+            car['center_x'] += car['speed']
+            if car['center_x'] > self.screen_width + 10:
+                car['center_x'] = -10
+                car['speed'] = random.uniform(1.5, 3.0)
+
+        if self.chicken_center_y <= 10:
+            self.score += 1
+            self.done = True
+
+        if self.steps >= 5000:
+            self.done = True
+
+        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20)
+
+        info = {'score': self.score}
+        return self.get_obs(), self.done, info
