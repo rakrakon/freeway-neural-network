@@ -154,13 +154,13 @@ class FreewayENV:
             action = 0
 
         if action == 1:
-            self.chicken_center_y = max(0, self.chicken_center_y - 3)
+            self.chicken_center_y = max(0, self.chicken_center_y - 1)
         elif action == 2:
-            self.chicken_center_x = max(5, self.chicken_center_x - 6)
+            self.chicken_center_x = max(5, self.chicken_center_x - 1)
         elif action == 3:
-            self.chicken_center_x = min(self.screen_width - 5, self.chicken_center_x + 6)
+            self.chicken_center_x = min(self.screen_width - 5, self.chicken_center_x + 1)
         elif action == 4:
-            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 3)
+            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 1)
 
         for car in self.cars:
             car['center_x'] += car['speed']
