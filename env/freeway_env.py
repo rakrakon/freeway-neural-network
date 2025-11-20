@@ -44,6 +44,9 @@ class FreewayENV:
         self.car_width = 6
         self.car_height = 6
 
+        self.chicken_collision_width = 16
+        self.chicken_collision_height = 16
+
         self.action_map = {
             pygame.K_w: 1, pygame.K_UP: 1,
             pygame.K_a: 2, pygame.K_LEFT: 2,
@@ -117,6 +120,24 @@ class FreewayENV:
             obs[middle_y - 1:middle_y + 1, x:x_end] = YELLOW_COLOR
             obs[middle_y + SEPARATION:middle_y + SEPARATION + 2, x:x_end] = YELLOW_COLOR
 
+    def check_collision(self):
+        for car in self.cars:
+            # Bounding boxes
+            car_left = car['center_x'] - self.car_width // 2
+            car_right = car['center_x'] + self.car_width // 2
+            car_top = car['center_y'] - self.car_height // 2
+            car_bottom = car['center_y'] + self.car_height // 2
+
+            chicken_left = self.chicken_center_x - self.chicken_collision_width // 2
+            chicken_right = self.chicken_center_x + self.chicken_collision_width // 2
+            chicken_top = self.chicken_center_y - self.chicken_collision_height // 2
+            chicken_bottom = self.chicken_center_y + self.chicken_collision_height // 2
+
+            if (car_left < chicken_right and car_right > chicken_left and
+                    car_top < chicken_bottom and car_bottom > chicken_top):
+                return True
+        return False
+
     def step(self, action=None):
         self.steps += 1
 
@@ -147,6 +168,11 @@ class FreewayENV:
                 car['center_x'] = -10
                 car['speed'] = random.uniform(1.5, 3.0)
 
+        if self.check_collision():
+            self.done = True
+            info = {'score': self.score, 'collision': True}
+            return self.get_obs(), self.done, info
+
         if self.chicken_center_y <= 10:
             self.score += 1
             self.done = True
@@ -156,5 +182,5 @@ class FreewayENV:
 
         self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20)
 
-        info = {'score': self.score}
+        info = {'score': self.score, 'collision': False}
         return self.get_obs(), self.done, info

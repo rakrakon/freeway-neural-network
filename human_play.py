@@ -8,9 +8,9 @@ def main():
     obs, info = env.reset()
     done = False
     while not done:
-        _, done, _ = env.step()
+        _, done, info = env.step()
         graphics.render(env)
-
+        print(info)
 
 if __name__ == "__main__":
     main()
