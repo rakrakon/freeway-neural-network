@@ -1,8 +1,6 @@
 import random
-
 import numpy as np
 import pygame
-
 from utils import load_config
 
 ROAD_COLOR = [118, 122, 122]
@@ -11,12 +9,34 @@ CAR_COLOR = [0, 0, 255]
 WHITE_COLOR = [255, 255, 255]
 YELLOW_COLOR = [255, 255, 0]
 SIDEWALK_COLOR = [180, 180, 180]
-SIDEWALK_HEIGHT = 20  # pixels
+SIDEWALK_HEIGHT = 20
 
 DIVIDER_THICKNESS = 2
 SEPARATION = 4
 DASH_LENGTH = 10
 GAP_LENGTH = 10
+
+class ActionSpace:
+    """Simple discrete action space compatible with gym-like interface"""
+    def __init__(self, n):
+        self.n = n
+    
+    def sample(self):
+        """Sample a random action"""
+        return random.randint(0, self.n - 1)
+    
+    def seed(self, seed=None):
+        """Seed the action space RNG"""
+        random.seed(seed)
+
+class ObservationSpace:
+    """Simple observation space for compatibility"""
+    def __init__(self, shape):
+        self.shape = shape
+    
+    def seed(self, seed=None):
+        """Seed the observation space RNG"""
+        random.seed(seed)
 
 class FreewayENV:
     def __init__(self):
@@ -56,6 +76,11 @@ class FreewayENV:
 
         self.reset()
 
+        self.action_space = ActionSpace(5)
+        self.observation_space = ObservationSpace(
+            (self.screen_height, self.screen_width, 3)
+        )
+
     def reset(self):
         self.cars = []
         lane_height = (self.screen_height - 2 * SIDEWALK_HEIGHT) // self.num_lanes
@@ -78,7 +103,7 @@ class FreewayENV:
 
         self.draw_lanes(obs)
 
-        cx, cy = int(self.chicken_center_x), int(self.chicken_center_y)
+        cx, cy = int(self.chicken_center_x), int(self.chicken_center_y) # type: ignore
         obs[cy - self.chicken_height // 2: cy + self.chicken_height // 2 + 1,
         cx - self.chicken_width // 2: cx + self.chicken_width // 2 + 1] = CHICKEN_COLOR
 
@@ -128,10 +153,10 @@ class FreewayENV:
             car_top = car['center_y'] - self.car_height // 2
             car_bottom = car['center_y'] + self.car_height // 2
 
-            chicken_left = self.chicken_center_x - self.chicken_collision_width // 2
-            chicken_right = self.chicken_center_x + self.chicken_collision_width // 2
-            chicken_top = self.chicken_center_y - self.chicken_collision_height // 2
-            chicken_bottom = self.chicken_center_y + self.chicken_collision_height // 2
+            chicken_left = self.chicken_center_x - self.chicken_collision_width // 2 # type: ignore
+            chicken_right = self.chicken_center_x + self.chicken_collision_width // 2 # type: ignore
+            chicken_top = self.chicken_center_y - self.chicken_collision_height // 2 # type: ignore
+            chicken_bottom = self.chicken_center_y + self.chicken_collision_height // 2 # type: ignore
 
             if (car_left < chicken_right and car_right > chicken_left and
                     car_top < chicken_bottom and car_bottom > chicken_top):
@@ -154,13 +179,14 @@ class FreewayENV:
             action = 0
 
         if action == 1:
-            self.chicken_center_y = max(0, self.chicken_center_y - 1)
+            self.chicken_center_y = max(0, self.chicken_center_y - 1) # type: ignore
+            print("Forward Triggered!!")
         elif action == 2:
-            self.chicken_center_x = max(5, self.chicken_center_x - 1)
+            self.chicken_center_x = max(5, self.chicken_center_x - 1) # type: ignore
         elif action == 3:
-            self.chicken_center_x = min(self.screen_width - 5, self.chicken_center_x + 1)
+            self.chicken_center_x = min(self.screen_width - 5, self.chicken_center_x + 1) # type: ignore
         elif action == 4:
-            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 1)
+            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 1) # type: ignore
 
         for car in self.cars:
             car['center_x'] += car['speed']
@@ -173,14 +199,14 @@ class FreewayENV:
             info = {'score': self.score, 'collision': True}
             return self.get_obs(), self.done, info
 
-        if self.chicken_center_y <= 10:
+        if self.chicken_center_y <= 10: # type: ignore
             self.score += 1
             self.done = True
 
         if self.steps >= 5000:
             self.done = True
 
-        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20)
+        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20) # type: ignore
 
         info = {'score': self.score, 'collision': False}
         return self.get_obs(), self.done, info

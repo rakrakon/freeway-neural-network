@@ -5,6 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "ipython>=9.8.0",
+    "matplotlib>=3.10.7",
     "pygame>=2.6.1",
+    "pyyaml>=6.0.3",
     "torch>=2.9.1",
+    "torchvision>=0.24.1",
 ]
