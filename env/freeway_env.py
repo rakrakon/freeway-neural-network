@@ -60,14 +60,12 @@ class FreewayENV:
 
         self.action_map = {
             pygame.K_w: 1, pygame.K_UP: 1,
-            pygame.K_a: 2, pygame.K_LEFT: 2,
-            pygame.K_d: 3, pygame.K_RIGHT: 3,
-            pygame.K_s: 4, pygame.K_DOWN: 4
+            pygame.K_s: 2, pygame.K_DOWN: 2,
         }
 
         self.reset()
 
-        self.action_space = ActionSpace(5)
+        self.action_space = ActionSpace(3)
 
     def reset(self):
         self.cars = []
@@ -154,6 +152,7 @@ class FreewayENV:
     def step(self, action=None):
         self.steps += 1
 
+        # Handle keyboard input for human play
         if pygame.get_init():
             keys = pygame.key.get_pressed()
             for key, act in self.action_map.items():
@@ -166,35 +165,49 @@ class FreewayENV:
         if action is None:
             action = 0
 
-        if action == 1:
-            self.chicken_center_y = max(0, self.chicken_center_y - 1) # type: ignore
-            print("Forward Triggered!!")
-        elif action == 2:
-            self.chicken_center_x = max(5, self.chicken_center_x - 1) # type: ignore
-        elif action == 3:
-            self.chicken_center_x = min(self.screen_width - 5, self.chicken_center_x + 1) # type: ignore
-        elif action == 4:
-            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 1) # type: ignore
+        old_y = self.chicken_center_y
 
+        if action == 1:  # UP
+            self.chicken_center_y = max(0, self.chicken_center_y - 1)
+        elif action == 2:  # DOWN
+            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 1)
+
+        # Update cars
         for car in self.cars:
             car['center_x'] += car['speed']
             if car['center_x'] > self.screen_width + 10:
                 car['center_x'] = -10
                 car['speed'] = random.uniform(1.5, 3.0)
 
-        if self.check_collision():
-            self.done = True
-            info = {'score': self.score, 'collision': True}
-            return self.get_obs(), self.done, info
+        reward = 0.0
+        terminated = False
+        truncated = False
 
-        if self.chicken_center_y <= 10: # type: ignore
+        # Check collision
+        if self.check_collision():
+            reward = -1.0
+            terminated = True
+            info = {'score': self.score, 'collision': True, 'outcome': 'collision'}
+            return self.get_obs(), reward, terminated, truncated, info
+
+        # Win
+        if self.chicken_center_y <= 10:
+            reward = 1.0
             self.score += 1
-            self.done = True
+            terminated = True
+            info = {'score': self.score, 'collision': False, 'outcome': 'success'}
+            return self.get_obs(), reward, terminated, truncated, info
 
         if self.steps >= 5000:
-            self.done = True
+            reward = 0.0
+            truncated = True
+            info = {'score': self.score, 'collision': False, 'outcome': 'timeout'}
+            return self.get_obs(), reward, terminated, truncated, info
 
-        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20) # type: ignore
+        if self.chicken_center_y < old_y:
+            reward = 0.05  # Small reward for progress toward goal
 
-        info = {'score': self.score, 'collision': False}
-        return self.get_obs(), self.done, info
+        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20)
+
+        info = {'score': self.score, 'collision': False, 'outcome': 'ongoing'}
+        return self.get_obs(), reward, terminated, truncated, info

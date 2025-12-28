@@ -3,3 +3,16 @@ env:
   height: 480
   num_lanes: 10
   fps: 120
+train:
+  frame_stack: 4  # Stack 4 frames for temporal information
+  frame_height: 84
+  frame_width: 84
+  learning_rate: 0.00025  # Standard for Atari
+  gamma: 0.99  # Discount factor
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 50000  # Frames to decay epsilon over
+  batch_size: 32
+  replay_buffer_size: 100000
+  target_update_frequency: 1000  # Update target network every 1000 steps
+  learning_starts: 10000  # Start learning after collecting some experience

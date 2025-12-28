@@ -6,11 +6,14 @@ def main():
     env = FreewayENV()
     graphics = Graphics()
     obs, info = env.reset()
-    done = False
-    while not done:
-        _, done, info = env.step()
+    terminated = False
+    truncated = False
+
+    while not (terminated or truncated):
+        observation, reward, terminated, truncated, _ = env.step()
         graphics.render(env)
         print(info)
+
 
 if __name__ == "__main__":
     main()
