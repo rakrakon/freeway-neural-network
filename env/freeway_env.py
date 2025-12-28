@@ -29,15 +29,6 @@ class ActionSpace:
         """Seed the action space RNG"""
         random.seed(seed)
 
-class ObservationSpace:
-    """Simple observation space for compatibility"""
-    def __init__(self, shape):
-        self.shape = shape
-    
-    def seed(self, seed=None):
-        """Seed the observation space RNG"""
-        random.seed(seed)
-
 class FreewayENV:
     def __init__(self):
         self.config = load_config()
@@ -77,9 +68,6 @@ class FreewayENV:
         self.reset()
 
         self.action_space = ActionSpace(5)
-        self.observation_space = ObservationSpace(
-            (self.screen_height, self.screen_width, 3)
-        )
 
     def reset(self):
         self.cars = []

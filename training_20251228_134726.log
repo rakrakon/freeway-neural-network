@@ -1,0 +1,87 @@
+2025-12-28 13:47:27,059 - INFO - Using device: cpu
+2025-12-28 13:47:27,061 - INFO - CUDA available: False
+2025-12-28 13:47:27,063 - INFO - Environment initialized
+2025-12-28 13:47:27,065 - INFO - Screen dimensions: 480x640x3
+2025-12-28 13:47:27,065 - INFO - Number of actions: 5
+2025-12-28 13:47:27,072 - INFO - Networks initialized
+2025-12-28 13:47:27,072 - INFO - Policy network parameters: 742085
+2025-12-28 13:47:34,828 - INFO - ============================================================
+2025-12-28 13:47:34,828 - INFO - Training Configuration:
+2025-12-28 13:47:34,828 - INFO -   BATCH_SIZE: 32
+2025-12-28 13:47:34,828 - INFO -   GAMMA: 0.99
+2025-12-28 13:47:34,831 - INFO -   EPS_START: 0.9, EPS_END: 0.05, EPS_DECAY: 1000
+2025-12-28 13:47:34,831 - INFO -   TAU: 0.005
+2025-12-28 13:47:34,831 - INFO -   Learning Rate: 0.0001
+2025-12-28 13:47:34,833 - INFO -   NUM_EPISODES: 600
+2025-12-28 13:47:34,833 - INFO -   Memory Size: 10000
+2025-12-28 13:47:34,833 - INFO -   TARGET_UPDATE: 10 episodes
+2025-12-28 13:47:34,833 - INFO -   OPTIMIZE_EVERY: 4 steps
+2025-12-28 13:47:34,833 - INFO - ============================================================
+2025-12-28 13:47:34,833 - INFO - Starting training...
+2025-12-28 13:47:34,838 - INFO - Making step 0..
+2025-12-28 13:47:51,455 - INFO - Making step 1..
+2025-12-28 13:47:51,460 - INFO - Making step 2..
+2025-12-28 13:47:51,463 - INFO - Making step 3..
+2025-12-28 13:47:51,465 - INFO - Optimizing..
+2025-12-28 13:47:51,466 - INFO - Done.
+2025-12-28 13:47:51,492 - INFO - Making step 4..
+2025-12-28 13:47:51,497 - INFO - Making step 5..
+2025-12-28 13:47:51,504 - INFO - Making step 6..
+2025-12-28 13:47:51,505 - INFO - Making step 7..
+2025-12-28 13:47:51,505 - INFO - Optimizing..
+2025-12-28 13:47:51,505 - INFO - Done.
+2025-12-28 13:47:51,510 - INFO - Making step 8..
+2025-12-28 13:47:51,510 - INFO - Making step 9..
+2025-12-28 13:47:51,516 - INFO - Making step 10..
+2025-12-28 13:47:51,522 - INFO - Making step 11..
+2025-12-28 13:47:51,522 - INFO - Optimizing..
+2025-12-28 13:47:51,522 - INFO - Done.
+2025-12-28 13:47:51,524 - INFO - Making step 12..
+2025-12-28 13:47:51,530 - INFO - Making step 13..
+2025-12-28 13:47:51,554 - INFO - Making step 14..
+2025-12-28 13:47:51,554 - INFO - Making step 15..
+2025-12-28 13:47:51,554 - INFO - Optimizing..
+2025-12-28 13:47:51,554 - INFO - Done.
+2025-12-28 13:47:51,559 - INFO - Making step 16..
+2025-12-28 13:47:51,561 - INFO - Making step 17..
+2025-12-28 13:47:51,586 - INFO - Making step 18..
+2025-12-28 13:47:51,592 - INFO - Making step 19..
+2025-12-28 13:47:51,592 - INFO - Optimizing..
+2025-12-28 13:47:51,592 - INFO - Done.
+2025-12-28 13:47:51,599 - INFO - Making step 20..
+2025-12-28 13:47:51,603 - INFO - Making step 21..
+2025-12-28 13:47:51,611 - INFO - Making step 22..
+2025-12-28 13:47:51,618 - INFO - Making step 23..
+2025-12-28 13:47:51,620 - INFO - Optimizing..
+2025-12-28 13:47:51,620 - INFO - Done.
+2025-12-28 13:47:51,624 - INFO - Making step 24..
+2025-12-28 13:47:51,628 - INFO - Making step 25..
+2025-12-28 13:47:51,635 - INFO - Making step 26..
+2025-12-28 13:47:51,638 - INFO - Making step 27..
+2025-12-28 13:47:51,638 - INFO - Optimizing..
+2025-12-28 13:47:51,641 - INFO - Done.
+2025-12-28 13:47:51,644 - INFO - Making step 28..
+2025-12-28 13:47:51,647 - INFO - Making step 29..
+2025-12-28 13:47:51,651 - INFO - Making step 30..
+2025-12-28 13:47:51,651 - INFO - Making step 31..
+2025-12-28 13:47:51,651 - INFO - Optimizing..
+2025-12-28 13:47:53,282 - INFO - Done.
+2025-12-28 13:47:53,288 - INFO - Making step 32..
+2025-12-28 13:47:53,288 - INFO - Making step 33..
+2025-12-28 13:47:53,292 - INFO - Making step 34..
+2025-12-28 13:47:53,313 - INFO - Making step 35..
+2025-12-28 13:47:53,313 - INFO - Optimizing..
+2025-12-28 13:47:54,755 - INFO - Done.
+2025-12-28 13:47:54,755 - INFO - Making step 36..
+2025-12-28 13:47:54,755 - INFO - Making step 37..
+2025-12-28 13:47:54,775 - INFO - Making step 38..
+2025-12-28 13:47:54,775 - INFO - Making step 39..
+2025-12-28 13:47:54,786 - INFO - Optimizing..
+2025-12-28 13:47:56,157 - INFO - Done.
+2025-12-28 13:47:56,165 - INFO - Making step 40..
+2025-12-28 13:47:56,191 - INFO - Making step 41..
+2025-12-28 13:47:56,192 - INFO - Making step 42..
+2025-12-28 13:47:56,214 - INFO - Making step 43..
+2025-12-28 13:47:56,216 - INFO - Optimizing..
+2025-12-28 13:47:57,611 - INFO - Done.
+2025-12-28 13:47:57,623 - INFO - Making step 44..

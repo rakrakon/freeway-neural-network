@@ -34,7 +34,6 @@ plt.ion()
 
 device = torch.device(
     "cuda" if torch.cuda.is_available() else
-    "mps" if torch.backends.mps.is_available() else
     "cpu"
 )
 
@@ -74,7 +73,7 @@ class DQN(nn.Module):
 
 
 # Hyperparameters
-BATCH_SIZE = 32  # Reduced from 128 for faster training steps
+BATCH_SIZE = 32
 GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.05
@@ -82,8 +81,8 @@ EPS_DECAY = 1000
 TAU = 0.005
 LR = 1e-4
 NUM_EPISODES = 600
-TARGET_UPDATE = 10  # Update target network every N episodes instead of every step
-OPTIMIZE_EVERY = 4  # Only optimize every N steps to reduce overhead
+TARGET_UPDATE = 10
+OPTIMIZE_EVERY = 4
 
 # Get number of actions from gym action space
 n_actions = env.action_space.n
@@ -148,7 +147,6 @@ episode_rewards = []
 
 
 def plot_durations(show_result=False, force_update=False):
-    # Only plot every 10 episodes during training to reduce overhead
     if not show_result and not force_update and len(episode_durations) % 10 != 0:
         return
 
@@ -244,38 +242,22 @@ def optimize_model():
     return loss.item()
 
 
-def calculate_reward(info, action, current_y, previous_y=None):
-    calculated = 0.0
+def calculate_reward(info, action, current_y, previous_y):
+    # Big terminal reward
+    if info.get("score", 0) > 0:
+        return 100.0
 
-    # Big reward for successfully crossing
-    if info['score'] > 0:
-        calculated = 100.0
-        logger.debug(f"Successfully crossed! Reward: {calculated}")
-        return calculated
+    if info.get("collision", False):
+        return -2.0
 
-    # Moderate penalty for collision (not too harsh to avoid fear of moving)
-    if info.get('collision', False):
-        calculated = -2.0
-        logger.debug(f"Collision! Reward: {calculated}")
-        return calculated
+    if previous_y is None:
+        return 0.0
 
-    # Reward for actual forward progress (moving up the screen)
-    if previous_y is not None:
-        y_progress = previous_y - current_y  # Positive if moved up
-        if y_progress > 0:
-            calculated += 0.5  # Reward each step forward
-        elif y_progress < 0:
-            calculated -= 0.5  # Penalty for moving backward
+    # Forward progress (positive if moving up)
+    y_progress = previous_y - current_y
 
-    # Small penalty for standing still
-    if action == 0:
-        calculated -= 0.1
-
-    # Additional reward based on overall progress (how far up the screen)
-    progress_ratio = (env.screen_height - current_y) / env.screen_height
-    calculated += progress_ratio * 0.2  # Bonus for being closer to goal
-
-    return calculated
+    # Reward proportional to movement
+    return 0.5 * y_progress
 
 
 # Training loop
@@ -350,7 +332,6 @@ for i_episode in range(NUM_EPISODES):
             f"Score: {info['score']} | "
             f"Epsilon: {epsilon:.3f} | "
             f"Avg Loss: {avg_loss:.4f} | "
-            f"Memory: {len(memory)}/{memory.capacity} | "
             f"Total Steps: {total_steps}"
         )
 
