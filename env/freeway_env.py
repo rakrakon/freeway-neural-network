@@ -183,6 +183,10 @@ class FreewayENV:
         terminated = False
         truncated = False
 
+        # Small penalty for staying still
+        if reward == 0:
+            reward = -0.01
+
         # Check collision
         if self.check_collision():
             reward = -1.0
