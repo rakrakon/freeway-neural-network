@@ -205,7 +205,7 @@ class DQNTrainer:
     def train(self):
         """Train DQN agent on Atari Freeway with proper hyperparameters"""
 
-        num_episodes = 10000 if torch.cuda.is_available() or torch.backends.mps.is_available() else 1000
+        num_episodes = 50000 if torch.cuda.is_available() or torch.backends.mps.is_available() else 1000
 
         # Training metrics
         episode_rewards = []

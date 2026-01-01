@@ -69,10 +69,30 @@ class FreewayENV:
 
     def reset(self):
         self.cars = []
+        self.steps = 0
+        self.score = 0
+
         lane_height = (self.screen_height - 2 * SIDEWALK_HEIGHT) // self.num_lanes
+
+        # Define safe spawn zone (avoid chicken's initial position)
+        chicken_spawn_x = self.screen_width // 2
+        safe_distance = 50  # pixels
+
         for i in range(self.num_lanes):
             lane_center = SIDEWALK_HEIGHT + i * lane_height + lane_height // 2
-            car_x = random.uniform(0, self.screen_width)
+
+            # Only spawn cars far from chicken on the bottom lane
+            is_bottom_lane = (lane_center > self.screen_height - 40)
+
+            if is_bottom_lane:
+                # Spawn far from chicken
+                if random.random() < 0.5:
+                    car_x = random.uniform(0, chicken_spawn_x - safe_distance)
+                else:
+                    car_x = random.uniform(chicken_spawn_x + safe_distance, self.screen_width)
+            else:
+                car_x = random.uniform(0, self.screen_width)
+
             self.cars.append({
                 'center_x': car_x,
                 'center_y': lane_center,
