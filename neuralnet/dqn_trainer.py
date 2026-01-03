@@ -97,6 +97,7 @@ class DQNTrainer:
         # Add to frame buffer
         self.frame_buffer.append(processed)
 
+        # TODO: Might be problematic
         # If starting episode, fill buffer with copies of first frame
         while len(self.frame_buffer) < self.train_config.frame_stack:
             self.frame_buffer.append(processed)
@@ -155,9 +156,6 @@ class DQNTrainer:
         action_batch = torch.cat(batch.action)
         reward_batch = torch.cat(batch.reward)
 
-        # Clip rewards to [-1, 1] for stability
-        reward_batch = torch.clamp(reward_batch, -1.0, 1.0)
-
         # Compute Q(s_t, a) - the model's current predictions
         state_action_values = self.policy_net(state_batch).gather(1, action_batch)
 
@@ -182,7 +180,7 @@ class DQNTrainer:
         self.optimizer.zero_grad()
         loss.backward()
 
-        # Gradient clipping with proper value for Atari
+        # Gradient clipping
         nn.utils.clip_grad_norm_(self.policy_net.parameters(), 10.0)
 
         self.optimizer.step()
@@ -297,9 +295,12 @@ class DQNTrainer:
                     }, 'best_model_freeway.pth')
                     self.logger.info(f"New best model saved! Avg reward: {avg_reward:.2f}")
 
-            # Plot progress every 50 episodes
-            # if (i_episode + 1) % 50 == 0:
-            #     self.plot_training_progress(episode_rewards, episode_lengths, losses)
+            # obs = self.env.get_obs()
+            # processed = preprocess_frame(obs, self.train_config)
+            # plt.imsave(f'debug_obs_raw.png', obs)
+            # plt.imsave(f'debug_obs_processed.png', processed, cmap='gray')
+            # print(f"Raw obs shape: {obs.shape}, Processed shape: {processed.shape}")
+            # print(f"Processed min: {processed.min()}, max: {processed.max()}")
 
         self.logger.info('Training Complete')
         self.plot_training_progress(episode_rewards, episode_lengths, losses, show_result=True)

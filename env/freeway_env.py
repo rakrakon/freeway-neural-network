@@ -11,7 +11,7 @@ CAR_COLOR = [0, 0, 255]
 WHITE_COLOR = [255, 255, 255]
 YELLOW_COLOR = [255, 255, 0]
 SIDEWALK_COLOR = [180, 180, 180]
-SIDEWALK_HEIGHT = 20
+SIDEWALK_HEIGHT = 50  # Increased from 20 to give chicken safe starting zone
 
 DIVIDER_THICKNESS = 2
 SEPARATION = 4
@@ -38,14 +38,16 @@ class FreewayENV:
         self.chicken_center_x = None
         self.chicken_center_y = None
 
-        self.chicken_width = 7
-        self.chicken_height = 7
+        # MUCH LARGER sprites so they're visible after downscaling to 84x84
+        self.chicken_width = 30
+        self.chicken_height = 30
 
-        self.car_width = 6
-        self.car_height = 6
+        self.car_width = 35
+        self.car_height = 25
 
-        self.chicken_collision_width = 16
-        self.chicken_collision_height = 16
+        # Collision boxes slightly smaller for fair gameplay
+        self.chicken_collision_width = 25
+        self.chicken_collision_height = 25
 
         self.reset()
 
@@ -65,11 +67,11 @@ class FreewayENV:
         for i in range(self.num_lanes):
             lane_center = SIDEWALK_HEIGHT + i * lane_height + lane_height // 2
 
-            # Only spawn cars far from chicken on the bottom lane
-            is_bottom_lane = (lane_center > self.screen_height - 40)
+            # Only spawn cars far from chicken on the bottom lane (closest to starting position)
+            is_bottom_lane = (i == self.num_lanes - 1)  # Last lane is closest to chicken start
 
             if is_bottom_lane:
-                # Spawn far from chicken
+                # Spawn far from chicken horizontally to avoid immediate collision
                 if random.random() < 0.5:
                     car_x = random.uniform(0, chicken_spawn_x - safe_distance)
                 else:
@@ -84,7 +86,7 @@ class FreewayENV:
             })
 
         self.chicken_center_x = self.screen_width // 2
-        self.chicken_center_y = self.screen_height - 20
+        self.chicken_center_y = self.screen_height - 25  # Centered in bottom sidewalk (50/2 = 25)
 
         return self.get_obs(), {'score': self.score}
 
@@ -93,7 +95,7 @@ class FreewayENV:
 
         self.draw_lanes(obs)
 
-        cx, cy = int(self.chicken_center_x), int(self.chicken_center_y) # type: ignore
+        cx, cy = int(self.chicken_center_x), int(self.chicken_center_y)
         obs[cy - self.chicken_height // 2: cy + self.chicken_height // 2 + 1,
         cx - self.chicken_width // 2: cx + self.chicken_width // 2 + 1] = CHICKEN_COLOR
 
@@ -143,10 +145,10 @@ class FreewayENV:
             car_top = car['center_y'] - self.car_height // 2
             car_bottom = car['center_y'] + self.car_height // 2
 
-            chicken_left = self.chicken_center_x - self.chicken_collision_width // 2 # type: ignore
-            chicken_right = self.chicken_center_x + self.chicken_collision_width // 2 # type: ignore
-            chicken_top = self.chicken_center_y - self.chicken_collision_height // 2 # type: ignore
-            chicken_bottom = self.chicken_center_y + self.chicken_collision_height // 2 # type: ignore
+            chicken_left = self.chicken_center_x - self.chicken_collision_width // 2
+            chicken_right = self.chicken_center_x + self.chicken_collision_width // 2
+            chicken_top = self.chicken_center_y - self.chicken_collision_height // 2
+            chicken_bottom = self.chicken_center_y + self.chicken_collision_height // 2
 
             if (car_left < chicken_right and car_right > chicken_left and
                     car_top < chicken_bottom and car_bottom > chicken_top):
@@ -161,48 +163,54 @@ class FreewayENV:
         if action == 1:  # UP
             self.chicken_center_y = max(0, self.chicken_center_y - 1)
         elif action == 2:  # DOWN
-            self.chicken_center_y = min(self.screen_height - 3, self.chicken_center_y + 1)
+            self.chicken_center_y = min(self.screen_height - 25, self.chicken_center_y + 1)
 
         # Update cars
         for car in self.cars:
             car['center_x'] += car['speed']
             if car['center_x'] > self.screen_width + 10:
                 car['center_x'] = -10
-                car['speed'] = random.uniform(1.5, 3.0)
+                car['speed'] = random.uniform(1.5, 2.0)
 
-        reward = 0.0
         terminated = False
         truncated = False
+        reward = 0
 
-        # Small penalty for staying still
-        if reward == 0:
-            reward = -0.01
+        # TODO: Maybe try this?
+        # progress = (old_y - self.chicken_center_y) / self.screen_height
+        # if progress > 0:
+        #     reward += progress * 0.5
 
-        # Check collision
+            # Check collision FIRST (before other rewards)
         if self.check_collision():
-            reward = -1.0
+            reward = -10.0
             terminated = True
             info = {'score': self.score, 'collision': True, 'outcome': 'collision'}
             return self.get_obs(), reward, terminated, truncated, info
 
-        # Win
+        # Win condition
         if self.chicken_center_y <= 10:
-            reward = 1.0
+            reward = 10.0
             self.score += 1
             terminated = True
             info = {'score': self.score, 'collision': False, 'outcome': 'success'}
             return self.get_obs(), reward, terminated, truncated, info
 
+        # Timeout
         if self.steps >= 5000:
-            reward = 0.0
+            reward = -5.0
             truncated = True
             info = {'score': self.score, 'collision': False, 'outcome': 'timeout'}
             return self.get_obs(), reward, terminated, truncated, info
 
-        if self.chicken_center_y < old_y:
-            reward = 0.05  # Small reward for progress toward goal
+        # Small reward for moving forward
+        # if self.chicken_center_y < old_y:
+        #     reward = 0.01
+        # else:
+        #     reward = -0.02
 
-        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 20)
+        # Keep chicken within bounds (between top and bottom sidewalks)
+        self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 25)
 
         info = {'score': self.score, 'collision': False, 'outcome': 'ongoing'}
         return self.get_obs(), reward, terminated, truncated, info
