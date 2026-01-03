@@ -1,7 +1,9 @@
 import random
 import numpy as np
 import pygame
-from utils import load_config
+
+from env.action_space import ActionSpace
+from utils.config_utils import load_config
 
 ROAD_COLOR = [118, 122, 122]
 CHICKEN_COLOR = [110, 84, 35]
@@ -15,19 +17,6 @@ DIVIDER_THICKNESS = 2
 SEPARATION = 4
 DASH_LENGTH = 10
 GAP_LENGTH = 10
-
-class ActionSpace:
-    """Simple discrete action space compatible with gym-like interface"""
-    def __init__(self, n):
-        self.n = n
-    
-    def sample(self):
-        """Sample a random action"""
-        return random.randint(0, self.n - 1)
-    
-    def seed(self, seed=None):
-        """Seed the action space RNG"""
-        random.seed(seed)
 
 class FreewayENV:
     def __init__(self):
@@ -57,11 +46,6 @@ class FreewayENV:
 
         self.chicken_collision_width = 16
         self.chicken_collision_height = 16
-
-        self.action_map = {
-            pygame.K_w: 1, pygame.K_UP: 1,
-            pygame.K_s: 2, pygame.K_DOWN: 2,
-        }
 
         self.reset()
 
@@ -169,21 +153,8 @@ class FreewayENV:
                 return True
         return False
 
-    def step(self, action=None):
+    def step(self, action):
         self.steps += 1
-
-        # Handle keyboard input for human play
-        if pygame.get_init():
-            keys = pygame.key.get_pressed()
-            for key, act in self.action_map.items():
-                if keys[key]:
-                    action = act
-                    break
-            else:
-                action = 0
-
-        if action is None:
-            action = 0
 
         old_y = self.chicken_center_y
 

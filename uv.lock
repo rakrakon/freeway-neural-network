@@ -183,7 +183,6 @@ dependencies = [
     { name = "pydantic" },
     { name = "pygame" },
     { name = "pyyaml" },
-    { name = "torch" },
     { name = "torchvision" },
 ]
 
@@ -195,7 +194,6 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pygame", specifier = ">=2.6.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "torch", specifier = ">=2.9.1" },
     { name = "torchvision", specifier = ">=0.24.1" },
 ]
 

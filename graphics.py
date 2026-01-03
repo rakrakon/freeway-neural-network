@@ -1,6 +1,6 @@
 import pygame
 
-from utils import load_config
+from utils.config_utils import load_config
 
 CHICKEN_SPRITE_PATH = "assets/chicken.png"
 CAR_SPRITE_PATH = "assets/cars/red_car.png"

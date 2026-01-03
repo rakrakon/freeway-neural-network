@@ -15,8 +15,10 @@ from datetime import datetime
 from env.freeway_env import FreewayENV
 from neuralnet.dqn import DuelingDQN
 from neuralnet.replay_memory import ReplayMemory, Transition
-from config.config import cfg
+from config.config import cfg, TrainConfig
 import cv2
+
+from utils.preprocessing import preprocess_frame
 
 
 class DQNTrainer:
@@ -62,7 +64,7 @@ class DQNTrainer:
         # Get number of actions from gym action space
         n_actions = self.env.action_space.n
 
-        # Initialize DuelingDQN with proper dimensions for stacked frames
+        # Initialize DuelingDQN with dimensions for stacked frames
         # Input: (frame_stack, frame_height, frame_width)
         self.policy_net = DuelingDQN(
             h=self.train_config.frame_height,
@@ -87,25 +89,10 @@ class DQNTrainer:
         )
         self.memory = ReplayMemory(self.train_config.replay_buffer_size)
 
-    def preprocess_frame(self, frame):
-        """Preprocess Atari frame: grayscale, resize, normalize"""
-        # Convert to grayscale
-        gray = np.dot(frame[..., :3], [0.299, 0.587, 0.114])
-
-        # Resize to configured dimensions (84x84)
-        resized = cv2.resize(
-            gray,
-            (self.train_config.frame_width, self.train_config.frame_height),
-            interpolation=cv2.INTER_AREA
-        )
-
-        # Keep as uint8 to save memory (normalize in model forward)
-        return resized.astype(np.uint8)
-
     def get_state(self, observation):
         """Convert observation to stacked frames tensor"""
         # Preprocess the current frame
-        processed = self.preprocess_frame(observation)
+        processed = preprocess_frame(observation, self.train_config)
 
         # Add to frame buffer
         self.frame_buffer.append(processed)
