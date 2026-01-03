@@ -176,10 +176,11 @@ class FreewayENV:
         truncated = False
         reward = 0
 
+        # TODO: Old reward system? Also maybe load old semi okay model and go from there.
         # TODO: Maybe try this?
-        # progress = (old_y - self.chicken_center_y) / self.screen_height
-        # if progress > 0:
-        #     reward += progress * 0.5
+        progress = (old_y - self.chicken_center_y) / self.screen_height
+        if progress > 0:
+            reward += progress * 0.5
 
             # Check collision FIRST (before other rewards)
         if self.check_collision():

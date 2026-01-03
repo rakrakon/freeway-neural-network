@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# https://hyper.ai/en/sota/tasks/atari-games/benchmark/atari-games-on-atari-2600-freeway
+# QR DQN - 34
+# Bootstrapped DQN - 33.9
+# Double DuelingDQN - 33.3
 
 class DuelingDQN(nn.Module):
     """
