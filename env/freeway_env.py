@@ -176,13 +176,13 @@ class FreewayENV:
         truncated = False
         reward = 0
 
-        # TODO: Old reward system? Also maybe load old semi okay model and go from there.
-        # TODO: Maybe try this?
         progress = (old_y - self.chicken_center_y) / self.screen_height
-        if progress > 0:
-            reward += progress * 0.5
 
-            # Check collision FIRST (before other rewards)
+        if progress == 0:
+            reward += -0.01
+        reward += progress * 0.5
+
+
         if self.check_collision():
             reward = -10.0
             terminated = True
@@ -203,12 +203,6 @@ class FreewayENV:
             truncated = True
             info = {'score': self.score, 'collision': False, 'outcome': 'timeout'}
             return self.get_obs(), reward, terminated, truncated, info
-
-        # Small reward for moving forward
-        # if self.chicken_center_y < old_y:
-        #     reward = 0.01
-        # else:
-        #     reward = -0.02
 
         # Keep chicken within bounds (between top and bottom sidewalks)
         self.chicken_center_y = np.clip(self.chicken_center_y, 0, self.screen_height - 25)

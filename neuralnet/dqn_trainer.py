@@ -1,4 +1,5 @@
 import math
+import os
 import random
 from collections import deque
 from itertools import count
@@ -22,7 +23,7 @@ from utils.preprocessing import preprocess_frame
 
 
 class DQNTrainer:
-    def __init__(self):
+    def __init__(self, load_checkpoint=None):
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
@@ -88,6 +89,34 @@ class DQNTrainer:
             amsgrad=True
         )
         self.memory = ReplayMemory(self.train_config.replay_buffer_size)
+
+        self.start_episode = 0
+        if load_checkpoint:
+            if os.path.exists(load_checkpoint):
+                self.logger.info(f"Loading checkpoint from {load_checkpoint}")
+                checkpoint = torch.load(load_checkpoint, map_location=self.device)
+
+                # Load model states
+                self.policy_net.load_state_dict(checkpoint['policy_net_state_dict'])
+                self.target_net.load_state_dict(checkpoint['target_net_state_dict'])
+                self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+                # Load training progress
+                self.steps_done = checkpoint.get('global_step', 0)
+                self.start_episode = checkpoint.get('episode', 0)
+
+                # Update optimizer learning rate to new config value
+                for param_group in self.optimizer.param_groups:
+                    param_group['lr'] = self.train_config.learning_rate
+
+                self.logger.info(f"Resumed from episode {self.start_episode}")
+                self.logger.info(f"Resumed from step {self.steps_done}")
+                self.logger.info(f"Learning rate set to: {self.train_config.learning_rate}")
+
+                if 'avg_reward' in checkpoint:
+                    self.logger.info(f"Previous avg reward: {checkpoint['avg_reward']:.2f}")
+            else:
+                self.logger.warning(f"Checkpoint file {load_checkpoint} not found. Starting from scratch.")
 
     def get_state(self, observation):
         """Convert observation to stacked frames tensor"""
@@ -190,7 +219,7 @@ class DQNTrainer:
     def train(self):
         """Train DQN agent on Atari Freeway with proper hyperparameters"""
 
-        num_episodes = 50000 if torch.cuda.is_available() or torch.backends.mps.is_available() else 1000
+        num_episodes = 100000 if torch.cuda.is_available() or torch.backends.mps.is_available() else 1000
 
         # Training metrics
         episode_rewards = []
@@ -203,7 +232,7 @@ class DQNTrainer:
 
         global_step = 0
 
-        for i_episode in range(num_episodes):
+        for i_episode in range(self.start_episode, num_episodes):
             self.reset_frame_buffer()
 
             # Initialize episode
