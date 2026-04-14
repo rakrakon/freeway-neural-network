@@ -9,8 +9,7 @@ import torch.nn.functional as F
 
 class DuelingDQN(nn.Module):
     """
-    Dueling DQN architecture - often performs better for Atari games.
-    Separates state value and action advantages.
+    Dueling DQN architecture - Separates state value and action advantages.
     """
 
     def __init__(self, h=84, w=84, outputs=3, frame_stack=4):
@@ -41,7 +40,7 @@ class DuelingDQN(nn.Module):
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                nn.init.xavier_uniform_(m.weight)
+                nn.init.kaiming_uniform(m.weight)
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
