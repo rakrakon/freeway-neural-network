@@ -6,7 +6,6 @@ class EnvConfig(BaseModel):
     width: int
     height: int
     num_lanes: int
-    fps: int
 
 class TrainConfig(BaseModel):
     frame_stack: int

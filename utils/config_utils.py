@@ -2,6 +2,8 @@ from pathlib import Path
 
 import yaml
 
+from config.config import Config
+
 
 def get_project_root() -> Path:
     current = Path(__file__).resolve()
@@ -12,8 +14,11 @@ def get_project_root() -> Path:
 
 CONFIG_PATH = "config/config.yaml"
 
-def load_config():
+def load_config() -> Config:
     project_root = get_project_root()
     config_path = project_root / CONFIG_PATH
+
     with open(config_path, "r") as file:
-        return yaml.safe_load(file)
+        raw = yaml.safe_load(file)
+
+    return Config.model_validate(raw)

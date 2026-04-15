@@ -1,8 +1,7 @@
 env:
-  width: 640
-  height: 480
+  width: 84
+  height: 84
   num_lanes: 10
-  fps: 120
 train:
   frame_stack: 4  # Stack 4 frames for temporal information
   frame_height: 84

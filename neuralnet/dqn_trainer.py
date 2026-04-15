@@ -126,7 +126,6 @@ class DQNTrainer:
         # Add to frame buffer
         self.frame_buffer.append(processed)
 
-        # TODO: Might be problematic
         # If starting episode, fill buffer with copies of first frame
         while len(self.frame_buffer) < self.train_config.frame_stack:
             self.frame_buffer.append(processed)
