@@ -247,21 +247,19 @@ class DQNTrainer:
 
                 # Frame skipping
                 total_reward = 0
+                done = False
+
                 for _ in range(4):
-                    observation, reward, terminated, truncated, _ = self.env.step(action.item())
+                    observation, reward, done, _ = self.env.step(action.item())
                     total_reward += reward
-                    if terminated or truncated:
+                    if done:
                         break
 
                 reward_tensor = torch.tensor([total_reward], device=self.device)
                 episode_reward += total_reward
-                done = terminated or truncated
 
                 # Get next state
-                if terminated:
-                    next_state = None
-                else:
-                    next_state = self.get_state(observation)
+                next_state = None if done else self.get_state(observation)
 
                 # Store transition
                 self.memory.push(state, action, next_state, reward_tensor)

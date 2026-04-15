@@ -52,7 +52,7 @@ class FreewayENV:
         self.cars.clear()
         self._init_cars()
 
-        return self._get_obs()
+        return self._get_obs(), {}
 
     def _init_cars(self):
         lane_speeds = [1, 2, 1, 2, 1, 3, 2, 1, 2, 1]
