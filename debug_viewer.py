@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 
 from env.freeway_env import FreewayENV
+from neuralnet.dqn_player import DQNPlayer
 
 
 class DebugViewer:
@@ -48,12 +49,15 @@ class DebugViewer:
 def main():
     env = FreewayENV()
     viewer = DebugViewer()
-    obs = env.reset()
+    obs, _ = env.reset()
+
+    nn_player = DQNPlayer(env.action_space.n, "best_model_freeway.pth")
 
     total_reward = 0
 
     while True:
-        action = viewer.process_events()
+        # action = viewer.process_events()
+        action = nn_player.get_action(obs)
 
         obs, reward, done, info = env.step(action)
         total_reward += reward
