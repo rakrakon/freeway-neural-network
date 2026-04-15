@@ -120,16 +120,13 @@ class DQNTrainer:
 
     def get_state(self, observation):
         """Convert observation to stacked frames tensor"""
-        # Preprocess the current frame
-        processed = preprocess_frame(observation, self.train_config)
-
         # Add to frame buffer
-        self.frame_buffer.append(processed)
+        self.frame_buffer.append(observation)
 
         # TODO: Might be problematic
         # If starting episode, fill buffer with copies of first frame
         while len(self.frame_buffer) < self.train_config.frame_stack:
-            self.frame_buffer.append(processed)
+            self.frame_buffer.append(observation)
 
         # Stack frames: (frame_stack, H, W)
         state = np.stack(self.frame_buffer, axis=0)

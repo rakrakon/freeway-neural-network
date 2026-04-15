@@ -50,19 +50,17 @@ class DQNPlayer:
     def reset(self, initial_observation):
         """Reset frame buffer with initial observation - fill with copies of first frame"""
         self.frame_buffer.clear()
-        processed = preprocess_frame(initial_observation, self.train_config)
 
         # Fill buffer with copies of the first frame
         for _ in range(self.train_config.frame_stack):
-            self.frame_buffer.append(processed.copy())
+            self.frame_buffer.append(initial_observation.copy())
 
 
     def get_action(self, observation):
-        processed = preprocess_frame(observation, self.train_config)
-        self.frame_buffer.append(processed)
+        self.frame_buffer.append(observation)
 
         while len(self.frame_buffer) < self.train_config.frame_stack:
-            self.frame_buffer.append(processed.copy())
+            self.frame_buffer.append(observation.copy())
 
         # Stack frames and convert to tensor
         state = np.stack(self.frame_buffer, axis=0)
