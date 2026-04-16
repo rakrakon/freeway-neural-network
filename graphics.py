@@ -8,7 +8,7 @@ CAR_SPRITE_PATH = "assets/cars/red_car.png"
 class Graphics:
     def __init__(self):
         self.config = load_config()
-        self.screen_width = self.config['env']['width']
+        self.screen_width = self.config.env['width']
         self.screen_height = self.config['env']['height']
         self.car_sprite = None
         self.chicken_sprite = None

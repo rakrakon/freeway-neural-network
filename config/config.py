@@ -21,9 +21,14 @@ class TrainConfig(BaseModel):
     target_update_frequency: int
     learning_starts: int
 
+class GraphicConfig(BaseModel):
+    width: int
+    height: int
+
 class Config(BaseModel):
     env: EnvConfig
     train: TrainConfig
+    graphics: GraphicConfig
 
 
 with open("config/config.yaml") as f:
