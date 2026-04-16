@@ -37,7 +37,7 @@ class DQNPlayer:
             frame_stack=self.train_config.frame_stack
         ).to(self.device)
 
-        checkpoint = torch.load(model_path, map_location=self.device)
+        checkpoint = torch.load(model_path, weights_only=False, map_location=self.device)
         self.policy_net.load_state_dict(checkpoint['policy_net_state_dict'])
         self.policy_net.eval()
 
