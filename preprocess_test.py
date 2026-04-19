@@ -6,8 +6,8 @@ from config.config import cfg
 env = FreewayENV()
 obs, _ = env.reset()
 
-print(f"Chicken size: {env.chicken_width}x{env.chicken_height}")
-print(f"Car size: {env.car_width}x{env.car_height}")
+for i in range(30):
+    obs, _, _, _ = env.step(env.action_space.sample())
 
 processed = preprocess_frame(obs, cfg.train)
 
