@@ -18,5 +18,5 @@ train:
   learning_starts: 10000  # Start learning after collecting some experience
 graphics:
   # The width and the height used for the graphics display, meaning it will be the screen resolution
-  width: 84
-  height: 84
+  width: 672
+  height: 672

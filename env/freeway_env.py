@@ -152,11 +152,13 @@ class FreewayENV:
 
         if has_collided:
             reward = -1
+            self.score -= 1
             self._reset_player() # Reset player to initial position
 
         # Player has reached the top
         if self.player_y <= 3:
             reward = 1
+            self.score += 1
             self._reset_player() # Reset player to initial position
 
         if self.frame >= self.max_frames:
@@ -164,7 +166,7 @@ class FreewayENV:
 
         obs = self._get_obs()
 
-        return obs, reward, done, {}
+        return obs, reward, done, { "score": self.score }
 
     def _check_collision(self) -> bool:
         px1 = self.player_x

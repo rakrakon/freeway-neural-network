@@ -8,7 +8,6 @@ from neuralnet.dqn_player import DQNPlayer
 pygame.init()
 pygame.font.init()
 
-# Adjust fonts as necessary, falling back to a default system font
 FONT = pygame.font.SysFont("Arial", 36)
 TITLE_FONT = pygame.font.SysFont("Arial", 60, bold=True)
 
@@ -57,23 +56,19 @@ def show_main_menu(screen):
                     sys.exit()
 
 
-def show_game_over(screen, info, total_reward):
-    """Displays the death/win screen and handles restart."""
+def show_game_over(screen, info):
+    """Displays the score when time runs out and handles restart."""
     screen.fill(BLACK)
-
     center_x = screen.get_width() // 2
 
-    if info["outcome"] == "success":
-        title_text = "WIN"
-        title_color = GREEN
-    else:
-        title_text = "LOSE"
-        title_color = RED
+    score = info["score"]
 
-    draw_text(screen, title_text, TITLE_FONT, title_color, center_x, 80)
+    draw_text(screen, "TIME'S UP!", TITLE_FONT, WHITE, center_x, 80)
 
-    draw_text(screen, "Press R - Play Again", FONT, GREEN, center_x, 170)
-    draw_text(screen, "Press M - Main Menu", FONT, WHITE, center_x, 230)
+    draw_text(screen, f"FINAL SCORE: {score}", FONT, GREEN, center_x, 160)
+
+    draw_text(screen, "Press R - Play Again", FONT, WHITE, center_x, 300)
+    draw_text(screen, "Press M - Main Menu", FONT, WHITE, center_x, 360)
 
     pygame.display.flip()
 
@@ -90,18 +85,16 @@ def show_game_over(screen, info, total_reward):
 
 
 def play_manual(env, graphics):
-    """Human-controlled loop."""
+    """Human controlled loop."""
     observation, info = env.reset()
-    terminated = False
-    truncated = False
-    total_reward = 0
+    done = False
 
     action_map = {
         pygame.K_w: 1, pygame.K_UP: 1,
         pygame.K_s: 2, pygame.K_DOWN: 2,
     }
 
-    while not (terminated or truncated):
+    while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -113,23 +106,19 @@ def play_manual(env, graphics):
             if keys[key]:
                 action = act
                 break
-        observation, reward, terminated, truncated, info = env.step(action)
-        total_reward += reward
-        graphics.render(env)
-
-    return info, total_reward
+        observation, reward, done, info = env.step(action)
+        graphics.render(observation, info['score'])
+    return info
 
 
 def play_ai(env, graphics, nn_player):
-    """AI-controlled loop."""
+    """NN controlled loop."""
     observation, info = env.reset()
-    terminated = False
-    truncated = False
-    total_reward = 0
+    done = False
 
     nn_player.reset(observation)
 
-    while not (terminated or truncated):
+    while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -137,30 +126,26 @@ def play_ai(env, graphics, nn_player):
 
         action = nn_player.get_action(observation)
 
-        observation, reward, terminated, truncated, info = env.step(action)
-        total_reward += reward
-        graphics.render(env)
+        observation, reward, done, info = env.step(action)
+        graphics.render(observation, info['score'])
 
-    return info, total_reward
+    return info
 
 
 def main():
     env = FreewayENV()
     graphics = Graphics()
 
-    graphics.render(env)
-
     screen = pygame.display.get_surface()
 
     if screen is None:
         raise RuntimeError("Graphics class did not initialize a pygame display surface.")
 
-    nn_player = DQNPlayer(env.action_space.n, "some_model_6.72.pth")
+    nn_player = DQNPlayer(env.action_space.n, "best_model_freeway.pth")
 
     current_state = "MENU"
     selected_mode = None
     last_info = None
-    last_reward = 0
 
     while True:
         if current_state == "MENU":
@@ -169,15 +154,14 @@ def main():
 
         elif current_state == "PLAY":
             if selected_mode == "MANUAL":
-                last_info, last_reward = play_manual(env, graphics)
+                last_info = play_manual(env, graphics)
             elif selected_mode == "AI":
-                last_info, last_reward = play_ai(env, graphics, nn_player)
+                last_info = play_ai(env, graphics, nn_player)
 
             current_state = "GAME_OVER"
 
         elif current_state == "GAME_OVER":
-            user_choice = show_game_over(screen, last_info, last_reward)
-
+            user_choice = show_game_over(screen, last_info)
             if user_choice == "REPLAY":
                 current_state = "PLAY"
             elif user_choice == "MENU":

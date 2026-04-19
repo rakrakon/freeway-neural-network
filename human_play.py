@@ -8,8 +8,7 @@ def main():
     env = FreewayENV()
     graphics = Graphics()
     obs, info = env.reset()
-    terminated = False
-    truncated = False
+    done = False
 
     action_map = {
         pygame.K_w: 1, pygame.K_UP: 1,
@@ -18,21 +17,24 @@ def main():
 
     action = 0
 
-    while not (terminated or truncated):
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
+                break
 
-        # Handle keyboard input for human play
-        if pygame.get_init():
-            keys = pygame.key.get_pressed()
-            for key, act in action_map.items():
-                if keys[key]:
-                    action = act
-                    break
-            else:
-                action = 0
+        if done:
+            break
 
-        observation, reward, terminated, truncated, info = env.step(action)
-        graphics.render(env)
-        print(info)
+        keys = pygame.key.get_pressed()
+        action = 0
+        for key, act in action_map.items():
+            if keys[key]:
+                action = act
+                break
+
+        observation, reward, done, info = env.step(action)
+        graphics.render(observation, info['score'])
 
 
 if __name__ == "__main__":
